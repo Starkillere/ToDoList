@@ -17,8 +17,21 @@
         h1 {
             text-align: center;
         }
-        .todo-list {
-            margin-top: 20px;
+        .hidden {
+            display: none;
+        }
+        .login-form, .todo-list-container {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .login-form input, .login-form button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
         .todo-item {
             display: flex;
@@ -29,9 +42,6 @@
             margin-bottom: 10px;
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        .todo-item span {
-            margin-right: 10px;
         }
         .todo-item button {
             padding: 5px 10px;
@@ -44,50 +54,66 @@
         .todo-item button:hover {
             background: #0056b3;
         }
-        .add-task {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-        .add-task button {
-            padding: 5px 10px;
-            background: #28a745;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        .add-task button:hover {
-            background: #1c7c31;
-        }
-        .score {
-            text-align: center;
-            margin-top: 20px;
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>To-Do List</h1>
-        <div class="todo-list" id="todoList"></div>
-        <div class="add-task">
-            <button onclick="openTaskForm()">Add Task</button>
+        
+        <!-- Login Form -->
+        <div class="login-form" id="loginForm">
+            <h2>Login</h2>
+            <input type="password" id="password" placeholder="Enter your password">
+            <button onclick="authenticate()">Login</button>
+            <p id="errorMessage" style="color: red; display: none;">Incorrect password. Please try again.</p>
         </div>
-        <div class="score" id="efficiencyScore">Efficiency Score: 0</div>
-    </div>
 
-    <!-- Add Task Modal -->
-    <div id="taskForm" style="display: none;">
-        <h2>Add a New Task</h2>
-        <label>Task Name: <input type="text" id="taskName"></label><br>
-        <label>Estimated Time (minutes): <input type="number" id="taskTime"></label><br>
-        <label>Difficulty (1-5): <input type="number" id="taskDifficulty" min="1" max="5"></label><br>
-        <button onclick="addTask()">Add Task</button>
-        <button onclick="closeTaskForm()">Close</button>
+        <!-- To-Do List Section -->
+        <div class="todo-list-container hidden" id="todoApp">
+            <div class="todo-list" id="todoList"></div>
+            <div>
+                <button onclick="openTaskForm()">Add Task</button>
+            </div>
+            <div class="score" id="efficiencyScore">Efficiency Score: 0</div>
+        </div>
+
+        <!-- Add Task Modal -->
+        <div id="taskForm" style="display: none;">
+            <h2>Add a New Task</h2>
+            <label>Task Name: <input type="text" id="taskName"></label><br>
+            <label>Estimated Time (minutes): <input type="number" id="taskTime"></label><br>
+            <label>Difficulty (1-5): <input type="number" id="taskDifficulty" min="1" max="5"></label><br>
+            <button onclick="addTask()">Add Task</button>
+            <button onclick="closeTaskForm()">Close</button>
+        </div>
     </div>
 
     <script>
+        // Password hash stored in code
+        const passwordHash = "b0c520aac7a87534dbeda6a703d02a3df88033b756ab688c5605cda45f920b94"; // Hash of "password"
+
+        // SHA-256 hashing function
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+        }
+
+        // Authentication function
+        async function authenticate() {
+            const inputPassword = document.getElementById('password').value;
+            const hashedInput = await sha256(inputPassword);
+
+            if (hashedInput === passwordHash) {
+                document.getElementById('loginForm').classList.add('hidden');
+                document.getElementById('todoApp').classList.remove('hidden');
+            } else {
+                document.getElementById('errorMessage').style.display = 'block';
+            }
+        }
+
         const todoList = document.getElementById('todoList');
         const efficiencyScore = document.getElementById('efficiencyScore');
         let score = 0;
@@ -172,3 +198,4 @@
     </script>
 </body>
 </html>
+
