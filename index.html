@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        h1 {
+            text-align: center;
+        }
+        .todo-list {
+            margin-top: 20px;
+        }
+        .todo-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #ffffff;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .todo-item span {
+            margin-right: 10px;
+        }
+        .todo-item button {
+            padding: 5px 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .todo-item button:hover {
+            background: #0056b3;
+        }
+        .add-task {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .add-task button {
+            padding: 5px 10px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .add-task button:hover {
+            background: #1c7c31;
+        }
+        .score {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>To-Do List</h1>
+        <div class="todo-list" id="todoList"></div>
+        <div class="add-task">
+            <button onclick="openTaskForm()">Add Task</button>
+        </div>
+        <div class="score" id="efficiencyScore">Efficiency Score: 0</div>
+    </div>
+
+    <!-- Add Task Modal -->
+    <div id="taskForm" style="display: none;">
+        <h2>Add a New Task</h2>
+        <label>Task Name: <input type="text" id="taskName"></label><br>
+        <label>Estimated Time (minutes): <input type="number" id="taskTime"></label><br>
+        <label>Difficulty (1-5): <input type="number" id="taskDifficulty" min="1" max="5"></label><br>
+        <button onclick="addTask()">Add Task</button>
+        <button onclick="closeTaskForm()">Close</button>
+    </div>
+
+    <script>
+        const todoList = document.getElementById('todoList');
+        const efficiencyScore = document.getElementById('efficiencyScore');
+        let score = 0;
+
+        function openTaskForm() {
+            document.getElementById('taskForm').style.display = 'block';
+        }
+
+        function closeTaskForm() {
+            document.getElementById('taskForm').style.display = 'none';
+        }
+
+        function addTask() {
+            const name = document.getElementById('taskName').value;
+            const time = parseInt(document.getElementById('taskTime').value);
+            const difficulty = parseInt(document.getElementById('taskDifficulty').value);
+
+            if (!name || !time || !difficulty) {
+                alert('Please fill in all fields.');
+                return;
+            }
+
+            const task = {
+                name,
+                estimatedTime: time,
+                timeSpent: 0,
+                difficulty,
+                timer: null
+            };
+
+            addTaskToUI(task);
+            closeTaskForm();
+        }
+
+        function addTaskToUI(task) {
+            const item = document.createElement('div');
+            item.className = 'todo-item';
+
+            item.innerHTML = `
+                <span><b>${task.name}</b></span>
+                <span>Est. Time: ${task.estimatedTime} mins</span>
+                <span>Spent: <span id="timeSpent">0</span> mins</span>
+                <span>Difficulty: ${task.difficulty}</span>
+                <button onclick="markAsDone(this, ${task.estimatedTime}, ${task.difficulty})">Mark as Done</button>
+                <button onclick="startTimer(this)">Start Timer</button>
+            `;
+
+            todoList.appendChild(item);
+        }
+
+        function startTimer(button) {
+            const item = button.parentElement;
+            const timeSpentSpan = item.querySelector('#timeSpent');
+
+            let timeSpent = parseInt(timeSpentSpan.innerText);
+            button.disabled = true;
+
+            const timer = setInterval(() => {
+                timeSpent++;
+                timeSpentSpan.innerText = timeSpent;
+                item.dataset.timeSpent = timeSpent;
+            }, 60000);
+
+            item.dataset.timer = timer;
+        }
+
+        function markAsDone(button, estimatedTime, difficulty) {
+            const item = button.parentElement;
+            const timeSpent = parseInt(item.querySelector('#timeSpent').innerText);
+
+            // Stop the timer
+            clearInterval(parseInt(item.dataset.timer));
+
+            // Calculate efficiency score increment
+            const efficiency = Math.max(0, estimatedTime - Math.abs(timeSpent - estimatedTime) + difficulty);
+            score += efficiency;
+            efficiencyScore.innerText = `Efficiency Score: ${score}`;
+
+            // Remove the item
+            todoList.removeChild(item);
+        }
+    </script>
+</body>
+</html>
