@@ -109,6 +109,7 @@
             if (hashedInput === passwordHash) {
                 document.getElementById('loginForm').classList.add('hidden');
                 document.getElementById('todoApp').classList.remove('hidden');
+                loadTasksFromStorage();
             } else {
                 document.getElementById('errorMessage').style.display = 'block';
             }
@@ -145,6 +146,7 @@
             };
 
             addTaskToUI(task);
+            saveTaskToStorage(task);
             closeTaskForm();
         }
 
@@ -155,7 +157,7 @@
             item.innerHTML = `
                 <span><b>${task.name}</b></span>
                 <span>Est. Time: ${task.estimatedTime} mins</span>
-                <span>Spent: <span id="timeSpent">0</span> mins</span>
+                <span>Spent: <span id="timeSpent">${task.timeSpent}</span> mins</span>
                 <span>Difficulty: ${task.difficulty}</span>
                 <button onclick="markAsDone(this, ${task.estimatedTime}, ${task.difficulty})">Mark as Done</button>
                 <button onclick="startTimer(this)">Start Timer</button>
@@ -194,8 +196,28 @@
 
             // Remove the item
             todoList.removeChild(item);
+
+            // Remove the task from storage
+            removeTaskFromStorage(item.querySelector('b').innerText);
+        }
+
+        // Local Storage Functions
+        function saveTaskToStorage(task) {
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            tasks.push(task);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function loadTasksFromStorage() {
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            tasks.forEach(task => addTaskToUI(task));
+        }
+
+        function removeTaskFromStorage(taskName) {
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            tasks = tasks.filter(task => task.name !== taskName);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
         }
     </script>
 </body>
 </html>
-
