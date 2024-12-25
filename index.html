@@ -109,7 +109,7 @@
             if (hashedInput === passwordHash) {
                 document.getElementById('loginForm').classList.add('hidden');
                 document.getElementById('todoApp').classList.remove('hidden');
-                loadTasksFromStorage();
+                loadTasksFromJSON();
             } else {
                 document.getElementById('errorMessage').style.display = 'block';
             }
@@ -146,7 +146,7 @@
             };
 
             addTaskToUI(task);
-            saveTaskToStorage(task);
+            saveTaskToJSON(task);
             closeTaskForm();
         }
 
@@ -197,26 +197,53 @@
             // Remove the item
             todoList.removeChild(item);
 
-            // Remove the task from storage
-            removeTaskFromStorage(item.querySelector('b').innerText);
+            // Remove the task from JSON
+            removeTaskFromJSON(item.querySelector('b').innerText);
         }
 
-        // Local Storage Functions
-        function saveTaskToStorage(task) {
-            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        // JSON File Persistence Functions
+        async function saveTaskToJSON(task) {
+            let tasks = await loadTasksFromJSON();
             tasks.push(task);
-            localStorage.setItem('tasks', JSON.stringify(tasks));
+            await saveTasksToFile(tasks);
         }
 
-        function loadTasksFromStorage() {
-            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-            tasks.forEach(task => addTaskToUI(task));
+        async function loadTasksFromJSON() {
+            try {
+                const response = await fetch('tasks.json');
+                if (response.ok) {
+                    const tasks = await response.json();
+                    tasks.forEach(task => addTaskToUI(task));
+                    return tasks;
+                }
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+            }
+            return [];
         }
 
-        function removeTaskFromStorage(taskName) {
-            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        async function saveTasksToFile(tasks) {
+            try {
+                const blob = new Blob([JSON.stringify(tasks, null, 2)], { type: 'application/json' });
+                const fileUrl = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = fileUrl;
+                a.download = 'tasks.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                URL.revokeObjectURL(fileUrl);
+            } catch (error) {
+                console.error('Error saving tasks:', error);
+            }
+        }
+
+        async function removeTaskFromJSON(taskName) {
+            let tasks = await loadTasksFromJSON();
             tasks = tasks.filter(task => task.name !== taskName);
-            localStorage.setItem('tasks', JSON.stringify(tasks));
+            await saveTasksToFile(tasks);
         }
     </script>
 </body>
