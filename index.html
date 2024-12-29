@@ -3,248 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>To-Do List</title>
+    <title>To-Do List App</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
+            padding: 0;
             background-color: #f4f4f9;
         }
-        .container {
-            max-width: 600px;
-            margin: auto;
-        }
-        h1 {
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
             text-align: center;
         }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .todo-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .todo-item {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 50px;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+
+        .todo-item button {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .todo-item button:hover {
+            background-color: #e60000;
+        }
+
+        .add-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .add-button:hover {
+            background-color: #45a049;
+        }
+
+        .efficiency {
+            text-align: right;
+            font-weight: bold;
+        }
+
         .hidden {
             display: none;
         }
-        .login-form, .todo-list-container {
-            background: #ffffff;
+
+        .form-popup {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            right: 15px;
+            border: 1px solid #ddd;
+            z-index: 9;
+            background: white;
             padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-        .login-form input, .login-form button {
-            width: 100%;
-            padding: 10px;
+
+        .form-popup input {
             margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .todo-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #ffffff;
+            width: calc(100% - 20px);
             padding: 10px;
-            margin-bottom: 10px;
+            border: 1px solid #ddd;
             border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-        .todo-item button {
-            padding: 5px 10px;
-            background: #007bff;
-            color: white;
+
+        .form-popup button {
+            width: calc(50% - 10px);
+            padding: 10px;
             border: none;
-            border-radius: 3px;
+            border-radius: 5px;
             cursor: pointer;
         }
-        .todo-item button:hover {
-            background: #0056b3;
+
+        .form-popup .save-button {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .form-popup .cancel-button {
+            background-color: #ff4d4d;
+            color: white;
+        }
+
+        .form-popup button:hover {
+            opacity: 0.9;
         }
     </style>
 </head>
 <body>
+    <header>
+        <h1>To-Do List App</h1>
+    </header>
     <div class="container">
-        <h1>To-Do List</h1>
-        
-        <!-- Login Form -->
-        <div class="login-form" id="loginForm">
-            <h2>Login</h2>
-            <input type="password" id="password" placeholder="Enter your password">
-            <button onclick="authenticate()">Login</button>
-            <p id="errorMessage" style="color: red; display: none;">Incorrect password. Please try again.</p>
-        </div>
+        <ul class="todo-list" id="todo-list"></ul>
+        <div class="efficiency" id="efficiency">Efficacité : 0%</div>
+        <button class="add-button" onclick="showForm()">Ajouter une tâche</button>
+    </div>
 
-        <!-- To-Do List Section -->
-        <div class="todo-list-container hidden" id="todoApp">
-            <div class="todo-list" id="todoList"></div>
-            <div>
-                <button onclick="openTaskForm()">Add Task</button>
-            </div>
-            <div class="score" id="efficiencyScore">Efficiency Score: 0</div>
-        </div>
-
-        <!-- Add Task Modal -->
-        <div id="taskForm" style="display: none;">
-            <h2>Add a New Task</h2>
-            <label>Task Name: <input type="text" id="taskName"></label><br>
-            <label>Estimated Time (minutes): <input type="number" id="taskTime"></label><br>
-            <label>Difficulty (1-5): <input type="number" id="taskDifficulty" min="1" max="5"></label><br>
-            <button onclick="addTask()">Add Task</button>
-            <button onclick="closeTaskForm()">Close</button>
-        </div>
+    <div class="form-popup" id="form-popup">
+        <h3>Ajouter une tâche</h3>
+        <input type="text" id="task-name" placeholder="Nom de la tâche">
+        <input type="number" id="task-time" placeholder="Temps prévu (minutes)">
+        <input type="number" id="task-difficulty" placeholder="Niveau de difficulté (1-5)">
+        <button class="save-button" onclick="addTask()">Enregistrer</button>
+        <button class="cancel-button" onclick="hideForm()">Annuler</button>
     </div>
 
     <script>
-        // Password hash stored in code
-        const passwordHash = "b0c520aac7a87534dbeda6a703d02a3df88033b756ab688c5605cda45f920b94"; // Hash of "password"
+        let tasks = [];
+        let efficiencyScore = 0;
 
-        // SHA-256 hashing function
-        async function sha256(message) {
-            const msgBuffer = new TextEncoder().encode(message);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-            return hashHex;
+        async function fetchTasks() {
+            const response = await fetch('todo.json');
+            if (response.ok) {
+                tasks = await response.json();
+            } else {
+                tasks = [];
+            }
+            renderTasks();
         }
 
-        // Authentication function
-        async function authenticate() {
-            const inputPassword = document.getElementById('password').value;
-            const hashedInput = await sha256(inputPassword);
+        async function saveTasks() {
+            // GitHub Pages doesn't support server-side changes.
+            // Instead, simulate saving data with localStorage.
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
 
-            if (hashedInput === passwordHash) {
-                document.getElementById('loginForm').classList.add('hidden');
-                document.getElementById('todoApp').classList.remove('hidden');
-                loadTasksFromJSON();
+        function loadTasksFromStorage() {
+            const storedTasks = localStorage.getItem('tasks');
+            if (storedTasks) {
+                tasks = JSON.parse(storedTasks);
             } else {
-                document.getElementById('errorMessage').style.display = 'block';
+                tasks = [];
             }
         }
 
-        const todoList = document.getElementById('todoList');
-        const efficiencyScore = document.getElementById('efficiencyScore');
-        let score = 0;
+        function renderTasks() {
+            const list = document.getElementById('todo-list');
+            list.innerHTML = '';
 
-        function openTaskForm() {
-            document.getElementById('taskForm').style.display = 'block';
+            tasks.sort((a, b) => a.difficulty - b.difficulty || a.timePlanned - b.timePlanned);
+
+            tasks.forEach((task, index) => {
+                const item = document.createElement('li');
+                item.className = 'todo-item';
+                item.innerHTML = `
+                    <span>${task.name}</span>
+                    <span>Prévu: ${task.timePlanned} min</span>
+                    <span>Passé: ${task.timeSpent || 0} min</span>
+                    <span>Difficulté: ${task.difficulty}</span>
+                    <button onclick="markAsDone(${index})">Réalisé</button>
+                `;
+                list.appendChild(item);
+            });
+
+            updateEfficiency();
         }
 
-        function closeTaskForm() {
-            document.getElementById('taskForm').style.display = 'none';
+        function showForm() {
+            document.getElementById('form-popup').style.display = 'block';
+        }
+
+        function hideForm() {
+            document.getElementById('form-popup').style.display = 'none';
         }
 
         function addTask() {
-            const name = document.getElementById('taskName').value;
-            const time = parseInt(document.getElementById('taskTime').value);
-            const difficulty = parseInt(document.getElementById('taskDifficulty').value);
+            const name = document.getElementById('task-name').value;
+            const timePlanned = parseInt(document.getElementById('task-time').value);
+            const difficulty = parseInt(document.getElementById('task-difficulty').value);
 
-            if (!name || !time || !difficulty) {
-                alert('Please fill in all fields.');
-                return;
-            }
-
-            const task = {
-                name,
-                estimatedTime: time,
-                timeSpent: 0,
-                difficulty,
-                timer: null
-            };
-
-            addTaskToUI(task);
-            saveTaskToJSON(task);
-            closeTaskForm();
-        }
-
-        function addTaskToUI(task) {
-            const item = document.createElement('div');
-            item.className = 'todo-item';
-
-            item.innerHTML = `
-                <span><b>${task.name}</b></span>
-                <span>Est. Time: ${task.estimatedTime} mins</span>
-                <span>Spent: <span id="timeSpent">${task.timeSpent}</span> mins</span>
-                <span>Difficulty: ${task.difficulty}</span>
-                <button onclick="markAsDone(this, ${task.estimatedTime}, ${task.difficulty})">Mark as Done</button>
-                <button onclick="startTimer(this)">Start Timer</button>
-            `;
-
-            todoList.appendChild(item);
-        }
-
-        function startTimer(button) {
-            const item = button.parentElement;
-            const timeSpentSpan = item.querySelector('#timeSpent');
-
-            let timeSpent = parseInt(timeSpentSpan.innerText);
-            button.disabled = true;
-
-            const timer = setInterval(() => {
-                timeSpent++;
-                timeSpentSpan.innerText = timeSpent;
-                item.dataset.timeSpent = timeSpent;
-            }, 60000);
-
-            item.dataset.timer = timer;
-        }
-
-        function markAsDone(button, estimatedTime, difficulty) {
-            const item = button.parentElement;
-            const timeSpent = parseInt(item.querySelector('#timeSpent').innerText);
-
-            // Stop the timer
-            clearInterval(parseInt(item.dataset.timer));
-
-            // Calculate efficiency score increment
-            const efficiency = Math.max(0, estimatedTime - Math.abs(timeSpent - estimatedTime) + difficulty);
-            score += efficiency;
-            efficiencyScore.innerText = `Efficiency Score: ${score}`;
-
-            // Remove the item
-            todoList.removeChild(item);
-
-            // Remove the task from JSON
-            removeTaskFromJSON(item.querySelector('b').innerText);
-        }
-
-        // JSON File Persistence Functions
-        async function saveTaskToJSON(task) {
-            let tasks = await loadTasksFromJSON();
-            tasks.push(task);
-            await saveTasksToFile(tasks);
-        }
-
-        async function loadTasksFromJSON() {
-            try {
-                const response = await fetch('tasks.json');
-                if (response.ok) {
-                    const tasks = await response.json();
-                    tasks.forEach(task => addTaskToUI(task));
-                    return tasks;
-                }
-            } catch (error) {
-                console.error('Error loading tasks:', error);
-            }
-            return [];
-        }
-
-        async function saveTasksToFile(tasks) {
-            try {
-                const blob = new Blob([JSON.stringify(tasks, null, 2)], { type: 'application/json' });
-                const fileUrl = URL.createObjectURL(blob);
-
-                const a = document.createElement('a');
-                a.href = fileUrl;
-                a.download = 'tasks.json';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-
-                URL.revokeObjectURL(fileUrl);
-            } catch (error) {
-                console.error('Error saving tasks:', error);
+            if (name && timePlanned && difficulty) {
+                tasks.push({ name, timePlanned, difficulty, timeSpent: 0 });
+                saveTasks();
+                renderTasks();
+                hideForm();
             }
         }
 
-        async function removeTaskFromJSON(taskName) {
-            let tasks = await loadTasksFromJSON();
-            tasks = tasks.filter(task => task.name !== taskName);
-            await saveTasksToFile(tasks);
+        function markAsDone(index) {
+            const task = tasks[index];
+            const efficiency = Math.min(100, (task.timePlanned / task.timeSpent) * 100 || 100);
+            efficiencyScore += efficiency;
+
+            tasks.splice(index, 1);
+            saveTasks();
+            renderTasks();
         }
+
+        function updateEfficiency() {
+            const totalTasks = tasks.length;
+            const efficiencyText = totalTasks > 0 
+                ? `Efficacité : ${(efficiencyScore / totalTasks).toFixed(2)}%` 
+                : 'Efficacité : 100%';
+
+            document.getElementById('efficiency').innerText = efficiencyText;
+        }
+
+        // Initialize tasks from localStorage for GitHub Pages.
+        loadTasksFromStorage();
+        renderTasks();
     </script>
 </body>
 </html>
